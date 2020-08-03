@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "mc-fix_lighting-fixes",
+  "version": "${version}",
+
+  "name": "MC-Fix Lighting Fixes",
+  "description": "Fixes MC lighting bugs",
+  "authors": [
+    "PhiPro"
+  ],
+  "contact": {
+    "sources": "https://github.com/PhiPro95/mc-fixes/commits/lighting-fixes"
+  },
+
+  "license": "MIT",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+    ]
+  },
+  "mixins": [
+  ],
+  "depends": {
+    "fabricloader": ">=0.8.0",
+    "minecraft": ">=1.14",
+	"mc-fix_mc-169913": "*",
+    "mc-fix_mc-170012": "*",
+    "mc-fix_mc-170010": "*",
+    "mc-fix_mc-196542": "*",
+    "mc-fix_mc-196725": "*",
+	"mc-fix_mc-197524": "*"
+  }
+}

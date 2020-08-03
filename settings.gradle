@@ -1,0 +1,49 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+pluginManagement {
+    repositories {
+        jcenter()
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+}
+
+ext.includedFabricProjects = []
+
+def buildFabricProject(String proj)
+{
+	exec {
+		workingDir "dependencies/${proj}"
+		
+		if (Os.isFamily(Os.FAMILY_WINDOWS))
+			executable 'gradlew.bat'
+		else
+			executable 'gradlew'
+			
+		args 'build'
+		
+		includedFabricProjects.each {
+			p -> args('--include-build', "../${p}")
+		}
+	}
+}
+
+def includeFabricProject(String proj)
+{
+	if (gradle.startParameter.getTaskNames().any {t -> t == 'setup'})
+		buildFabricProject proj	
+	
+	ext.includedFabricProjects += proj	
+	includeBuild("dependencies/${proj}")
+}
+
+
+includeFabricProject 'mc-fix_mc-169913'
+includeFabricProject 'mc-fix_mc-170012'
+includeFabricProject 'mc-fix_mc-196542'
+includeFabricProject 'mc-fix_mc-170010'
+includeFabricProject 'mc-fix_mc-196725'
+includeFabricProject 'mc-fix_mc-197524'
