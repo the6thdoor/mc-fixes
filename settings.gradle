@@ -9,6 +9,10 @@ pluginManagement {
         }
         gradlePluginPortal()
     }
+
+	plugins {
+		id 'fabric-loom' version "${loom_version}"
+	}
 }
 
 ext.includedFabricProjects = []
