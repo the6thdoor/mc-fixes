@@ -1,5 +1,5 @@
 {
-	"required": true,
+	"required": false,
 	"package": "ocd.mc196542.mixin",
 	"mixins": [
 		"LightStorageMixin",
@@ -8,6 +8,6 @@
 		"ChunkLightProviderMixin"
 	],
 	"injectors": {
-		"defaultRequire": 1
+		"defaultRequire": 0
 	}
 }

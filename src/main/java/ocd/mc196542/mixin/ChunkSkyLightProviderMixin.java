@@ -3,14 +3,18 @@ package ocd.mc196542.mixin;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Direction;
@@ -45,45 +49,94 @@ public abstract class ChunkSkyLightProviderMixin extends ChunkLightProvider<SkyL
 
     // propagateLevel() is not called concurrently, hence we can store some variables as fields
     @Unique
-    private long tmpSrcPos;
+    private long fromId, originalId;
 
-    @Redirect(
+    @Unique
+    BlockState fromState;
+
+    @Intrinsic
+    BlockState getBlockStateForLighting(int x, int y, int z) {
+        return null;
+    }
+
+    @Inject(
         method = "propagateLevel(JIZ)V",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/util/math/BlockPos;add(JIII)J"
-        )
+            target = "Lnet/minecraft/util/math/BlockPos;add(JIII)J",
+            ordinal = 0
+        ),
+        locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private long captureSrcPos(final long srcPos, final int x, final int y, final int z)
+    private void captureSrcPosY(long id, int level, boolean decrease, CallbackInfo ci, final long l, final int i, final int j, final int k, final int o)
     {
-        this.tmpSrcPos = BlockPos.add(srcPos, 0, y - (x == 0 && z == 0 ? Integer.signum(y) : 0), 0);
-        return BlockPos.add(srcPos, x, y, z);
+        int dy = -1 - o * 16;
+        this.fromId = BlockPos.add(id, 0, dy - Integer.signum(dy), 0);
+
+        int x = BlockPos.unpackLongX(fromId);
+        int y = BlockPos.unpackLongY(fromId);
+        int z = BlockPos.unpackLongZ(fromId);
+        this.fromState = this.getBlockStateForLighting(x, y, z);
     }
 
-    @Redirect(
+    @Inject(
+        method = "propagateLevel(JIZ)V",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/util/math/BlockPos;add(JIII)J",
+            ordinal = 1
+        )
+    )
+    private void captureSrcPos(long id, int level, boolean decrease, CallbackInfo ci)
+    {
+        this.fromId = id;
+    }
+
+    @Inject(
         method = "propagateLevel(JIZ)V",
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/util/math/BlockPos;offset(JLnet/minecraft/util/math/Direction;)J"
         )
     )
-    private long captureSrcPos(final long srcPos, final Direction dir)
+    private void captureSrcPos2(long id, int level, boolean decrease, CallbackInfo ci)
     {
-        this.tmpSrcPos = srcPos;
-        return BlockPos.offset(srcPos, dir);
+        this.fromId = id;
+
+        int x = BlockPos.unpackLongX(fromId);
+        int y = BlockPos.unpackLongY(fromId);
+        int z = BlockPos.unpackLongZ(fromId);
+        this.fromState = this.getBlockStateForLighting(x, y, z);
     }
 
-    @ModifyArg(
+    @ModifyVariable(
         method = "propagateLevel(JIZ)V",
         at = @At(
-            value = "INVOKE",
+            value = "INVOKE", 
             target = "Lnet/minecraft/world/chunk/light/ChunkSkyLightProvider;propagateLevel(JJIZ)V"
         ),
-        index = 0
+        argsOnly = true,
+        ordinal = 0
     )
     private long useDirectNeighborSrcPos(final long srcPos)
     {
-        return this.tmpSrcPos;
+        this.originalId = srcPos;
+        return this.fromId;
+    }
+
+    @ModifyVariable(
+        method = "propagateLevel(JIZ)V",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/chunk/light/ChunkSkyLightProvider;propagateLevel(JJIZ)V",
+            shift = At.Shift.AFTER
+        ),
+        argsOnly = true,
+        ordinal = 0
+    )
+    private long useOriginalSrcPos(final long srcPos)
+    {
+        return this.originalId;
     }
 
     // recalculateLevel() is not called concurrently, hence we can store some variables as fields
