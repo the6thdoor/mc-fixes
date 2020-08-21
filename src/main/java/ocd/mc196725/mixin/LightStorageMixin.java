@@ -312,6 +312,8 @@ public abstract class LightStorageMixin implements LightStorageAccessor, ILightU
         {
             final long chunkPos = it.nextLong();
 
+            this.enabledChunks.remove(chunkPos);
+
             // First need to remove all pending light updates before changing any light value
 
             for (int i = -1; i < 17; ++i)
@@ -351,7 +353,6 @@ public abstract class LightStorageMixin implements LightStorageAccessor, ILightU
                     this.onUnloadSection(ChunkSectionPos.asLong(ChunkSectionPos.unpackX(chunkPos), i, ChunkSectionPos.unpackZ(chunkPos)));
 
             this.setColumnEnabled(chunkPos, false);
-            this.enabledChunks.remove(chunkPos);
         }
 
         this.markedDisabledChunks.clear();
