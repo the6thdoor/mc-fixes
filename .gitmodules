@@ -17,7 +17,7 @@
 [submodule "mc-fix_mc-196725"]
 	path = dependencies/mc-fix_mc-196725
 	url = https://github.com/PhiPro95/mc-fixes.git
-	branch = mc-196725
+	branch = mc-196725_vanilla-compat
 [submodule "mc-fix_mc-197524"]
 	path = dependencies/mc-fix_mc-197524
 	url = https://github.com/PhiPro95/mc-fixes.git
