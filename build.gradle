@@ -14,7 +14,12 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	
+
+	modImplementation('ocd:mc-fix_mc-169913') {
+		version {
+			strictly '[1.0, 2.0)'
+		}
+	}
 	modImplementation('ocd:mc-fix_mc-170012') {
 		version {
 			strictly '[2.0, 3.0)'
